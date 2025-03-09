@@ -102,6 +102,7 @@ int printf(const char *fmt, ...) {
           break;
         }
       }
+      fmt++;
     } else {
       putch(*fmt);
       i++;
@@ -132,6 +133,7 @@ int sprintf(char *out, const char *fmt, ...) {
           s = va_arg(ap, char *);
           while (*s) {
             out[i] = *s;
+            // printf("out[%d] = %c\n", i, out[i]);
             i++;
             s++;
           }
@@ -145,6 +147,7 @@ int sprintf(char *out, const char *fmt, ...) {
           int n = 0;
           while (num[n]) {
             out[i] = num[n];
+            // printf("out[%d] = %c\n", i, out[i]);
             i++;
             n++;
           }
@@ -154,6 +157,7 @@ int sprintf(char *out, const char *fmt, ...) {
         case 'c': {
           c = (char) va_arg(ap, int);
           out[i] = c;
+          // printf("out[%d] = %c\n", i, out[i]);
           i++;
           break;
         }
@@ -164,13 +168,16 @@ int sprintf(char *out, const char *fmt, ...) {
           break;
         }
       }
+      fmt++;
     } else {
       out[i] = *fmt;
+      // printf("out[%d] = %c\n", i, out[i]);
       i++;
       fmt++;
     }
   }
-  out[i+1] = '\0';
+  out[i] = '\0';
+  // printf("out[%d] = %c\n", i, out[i]);
   return i;
 }
 
