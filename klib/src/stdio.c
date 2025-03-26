@@ -96,8 +96,14 @@ int printf(const char *fmt, ...) {
           break;
         }
 
+        case '%': {
+          putch('%');
+          i++;
+          break;
+        }
+
         default: {
-          printf("%%%c is not supported.", *fmt);
+          printf("fmt `%%%c` is not supported.\n", *fmt);
           assert(false);
           break;
         }
@@ -158,6 +164,12 @@ int sprintf(char *out, const char *fmt, ...) {
           c = (char) va_arg(ap, int);
           out[i] = c;
           // printf("out[%d] = %c\n", i, out[i]);
+          i++;
+          break;
+        }
+
+        case '%': {
+          out[i] = '%';
           i++;
           break;
         }
