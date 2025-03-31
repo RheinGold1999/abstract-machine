@@ -175,7 +175,7 @@ int sprintf(char *out, const char *fmt, ...) {
         }
 
         default: {
-          printf("%%%c is not supported.", *fmt);
+          printf("fmt `%%%c` is not supported.", *fmt);
           assert(false);
           break;
         }
