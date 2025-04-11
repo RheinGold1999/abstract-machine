@@ -18,33 +18,41 @@ void reverse(char *str, int len) {
 }
 
 // 将 int 转换为字符串
-int intToStr(int num, char *str) {
+int intToStr(int num, char *str, int base) {
+  assert(base == 10 || base == 16);
   int i = 0;
   int isNegative = 0;
-
+  unsigned int num_ = 0;
   // 处理负数
-  if (num < 0) {
+  if (num < 0 && base == 10) {
     isNegative = 1;
-    num = -num;
+    num_ = -num;
+  } else {
+    num_ = (unsigned int) num;
   }
 
   // 处理 0 的特殊情况
-  if (num == 0) {
+  if (num_ == 0) {
     str[i++] = '0';
     str[i] = '\0';
     return i;
   }
 
   // 逐位提取数字并转换为字符
-  while (num != 0) {
-    int digit = num % 10;
-    str[i++] = digit + '0';
-    num = num / 10;
+  while (num_ != 0) {
+    int digit = num_ % base;
+    str[i++] = (digit < 10) ? (digit + '0') : (digit - 10 + 'a');
+    num_ = num_ / base;
   }
 
   // 添加负号（如果需要）
   if (isNegative) {
     str[i++] = '-';
+  }
+
+  if (base == 16) {
+    str[i++] = 'x';
+    str[i++] = '0';
   }
 
   // 反转字符串
@@ -79,7 +87,20 @@ int printf(const char *fmt, ...) {
         case 'd': {
           d = va_arg(ap, int);
           char num[32];
-          intToStr(d, num);
+          intToStr(d, num, 10);
+          int n = 0;
+          while (num[n]) {
+            putch(num[n]);
+            i++;
+            n++;
+          }
+          break;
+        }
+
+        case 'p': {
+          d = va_arg(ap, int);
+          char num[32];
+          intToStr(d, num, 16);
           int n = 0;
           while (num[n]) {
             putch(num[n]);
@@ -103,7 +124,7 @@ int printf(const char *fmt, ...) {
         }
 
         default: {
-          printf("fmt `%%%c` is not supported.\n", *fmt);
+          printf("\nfmt `%%%c` is not supported.\n", *fmt);
           assert(false);
           break;
         }
@@ -149,7 +170,21 @@ int sprintf(char *out, const char *fmt, ...) {
         case 'd': {
           d = va_arg(ap, int);
           char num[32];
-          intToStr(d, num);
+          intToStr(d, num, 10);
+          int n = 0;
+          while (num[n]) {
+            out[i] = num[n];
+            // printf("out[%d] = %c\n", i, out[i]);
+            i++;
+            n++;
+          }
+          break;
+        }
+
+        case 'p': {
+          d = va_arg(ap, int);
+          char num[32];
+          intToStr(d, num, 16);
           int n = 0;
           while (num[n]) {
             out[i] = num[n];
@@ -175,7 +210,7 @@ int sprintf(char *out, const char *fmt, ...) {
         }
 
         default: {
-          printf("fmt `%%%c` is not supported.", *fmt);
+          printf("\nfmt `%%%c` is not supported.\n", *fmt);
           assert(false);
           break;
         }
