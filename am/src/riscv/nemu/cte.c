@@ -33,10 +33,14 @@ Context* __am_irq_handle(Context *c) {
     switch (c->mcause) {
       case -1:
         ev.event = EVENT_YIELD;  // `-1` comes from yield(): "li a7, -1; ecall"
+        c->mepc += 4; // MEPC should be added by 4 when it is YIELD
         break;
       default: 
         if ((SYS_exit <= c->mcause) && c->mcause <= SYS_gettimeofday) {
           ev.event = EVENT_SYSCALL;
+          if (c->mcause != SYS_execve) {
+            c->mepc += 4; // MEPC should be added by 4 when it is SYSCALL
+          }
         } else {
           ev.event = EVENT_ERROR; 
         }
@@ -63,7 +67,10 @@ bool cte_init(Context*(*handler)(Event, Context*)) {
 }
 
 Context *kcontext(Area kstack, void (*entry)(void *), void *arg) {
-  return NULL;
+  Context *ctx = (Context *)(kstack.end - sizeof(Context));
+  ctx->mepc = (uintptr_t)entry;
+  ctx->gpr[10] = (uintptr_t)arg;
+  return ctx;
 }
 
 void yield() {
