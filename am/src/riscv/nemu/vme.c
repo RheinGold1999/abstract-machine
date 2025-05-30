@@ -67,6 +67,17 @@ void __am_switch(Context *c) {
 }
 
 void map(AddrSpace *as, void *va, void *pa, int prot) {
+  uint32_t *pdir = (uint32_t *)as->ptr;
+  uint32_t *ptb = NULL:
+  size_t dir_i = ((uintptr_t)va >> 22) & 0x3FFULL;
+  size_t tb_i = ((uintptr_t)va >> 12) & 0x3FFULL; 
+  if ((pdir[dir_i] & 0x1) == 0) { // not present, allocate the page table
+    ptb = (uint32_t *)pgalloc_usr(PGSIZE);
+    pdir[dir_i] = (uintptr_t)ptb | 1;
+  } else {  // present, get the page table
+    ptb = (uint32_t *)(pdir[dir_i] & (~0xFFFULL));
+  }
+  ptb[tb_i] = ((uintptr_t)pa) & (~0xFFFULL) | 1;
 }
 
 Context *ucontext(AddrSpace *as, Area kstack, void *entry) {
