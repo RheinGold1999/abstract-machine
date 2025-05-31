@@ -34,6 +34,7 @@ bool vme_init(void* (*pgalloc_f)(int), void (*pgfree_f)(void*)) {
   for (i = 0; i < LENGTH(segments); i ++) {
     void *va = segments[i].start;
     for (; va < segments[i].end; va += PGSIZE) {
+      // printf("in vem_init for loop i = %d, va = %p\n", i, va);
       map(&kas, va, va, 0);
     }
   }
@@ -68,16 +69,20 @@ void __am_switch(Context *c) {
 
 void map(AddrSpace *as, void *va, void *pa, int prot) {
   uint32_t *pdir = (uint32_t *)as->ptr;
-  uint32_t *ptb = NULL:
-  size_t dir_i = ((uintptr_t)va >> 22) & 0x3FFULL;
-  size_t tb_i = ((uintptr_t)va >> 12) & 0x3FFULL; 
+  assert(pdir != NULL);
+
+  uint32_t *ptb = NULL;
+  size_t dir_i = ((uintptr_t)va >> 22) & 0x3FF;
+  size_t tb_i = ((uintptr_t)va >> 12) & 0x3FF; 
   if ((pdir[dir_i] & 0x1) == 0) { // not present, allocate the page table
     ptb = (uint32_t *)pgalloc_usr(PGSIZE);
     pdir[dir_i] = (uintptr_t)ptb | 1;
   } else {  // present, get the page table
-    ptb = (uint32_t *)(pdir[dir_i] & (~0xFFFULL));
+    ptb = (uint32_t *)(pdir[dir_i] & (~0xFFF));
   }
-  ptb[tb_i] = ((uintptr_t)pa) & (~0xFFFULL) | 1;
+  // printf("dir_i = %d, tb_i = %d, pdir = %p, ptb = %p\n", dir_i, tb_i, pdir, ptb);
+  ptb[tb_i] = ((uintptr_t)pa) & (~0xFFF);
+  ptb[tb_i] |= 1;
 }
 
 Context *ucontext(AddrSpace *as, Area kstack, void *entry) {
